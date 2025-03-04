@@ -48,11 +48,11 @@ Use `tff print` to see which characters your keys emit.
 
 ## My config
 
-[my-combos.yaml](./my-combos.yaml) is an example config.
+[my-combos.yaml](https://github.com/guettli/tff/blob/main/my-combos.yaml) is an example config.
 
 ## Usage
 
-[Usage](./usage.md)
+[Usage](https://github.com/guettli/tff/blob/main/usage.md)
 
 ## Keys That Are Hard to Access
 
