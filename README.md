@@ -7,21 +7,7 @@ I want to keep my index fingers on "F" and "J" as much as possible (a.k.a. the "
 
 Currently, `tff` only works on Linux. PRs to support other plattforms are welcome.
 
-## Install
-
-You can install `tff` via `go install`:
-
-```sh
-go install github.com/guettli/tff@latest
-```
-
-Use `sudo` because reading and writing from the Linux evdev needs root:
-
-```sh
-sudo $(go env GOPATH)/bin/tff -h
-```
-
-## combos.yaml
+## Example combos.yaml
 
 This combos.yaml file will print `1` if you overlap `F J` and `2` if you overlap `J F`:
 
@@ -33,7 +19,7 @@ combos:
     outKeys: 2
 ```
 
-The `combos` sub-command does the magic. It listens to the chosen device and translates events:
+The `tff combos` sub-command does the magic. It listens to the chosen device and translates events:
 
 ```sh
 sudo $(go env GOPATH)/bin/tff combos combos.yaml
@@ -115,6 +101,20 @@ You do not need to write in a staccato style.
 
 Keys that are part of a combo must not be emitted immediately. The code needs to wait a few
 milliseconds to determine if it is a combo or not. This delay exists but is almost unnoticeable.
+
+## Install
+
+You can install `tff` via `go install`:
+
+```sh
+go install github.com/guettli/tff@latest
+```
+
+Use `sudo` because reading and writing from the Linux evdev needs root:
+
+```sh
+sudo $(go env GOPATH)/bin/tff -h
+```
 
 ## Keyboard Input Details on Linux
 
