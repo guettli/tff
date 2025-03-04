@@ -5,6 +5,8 @@ write almost anything without looking at the keyboard.
 
 I want to keep my index fingers on "F" and "J" as much as possible (a.k.a. the "home row").
 
+Currently, `tff` only works on Linux. PRs to support other plattforms are welcome.
+
 ## Install
 
 You can install `tff` via `go install`:
