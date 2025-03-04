@@ -11,9 +11,5 @@ func PrintMain(path string) error {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	err = printEvents(sourceDev)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	return nil
+	return printEvents(sourceDev)
 }

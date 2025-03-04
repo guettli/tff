@@ -5,7 +5,7 @@ write almost anything without looking at the keyboard.
 
 I want to keep my index fingers on "F" and "J" as much as possible (a.k.a. the "home row").
 
-## Usage
+## Install
 
 You can install `tff` via `go install`:
 
@@ -17,38 +17,6 @@ Use `sudo` because reading and writing from the Linux evdev needs root:
 
 ```sh
 sudo $(go env GOPATH)/bin/tff -h
-```
-
-```text
-Create a new input device from an existing one
-Usage:
-  tff print [ /dev/input/... ]
-
-      print events.
-      If no device was given, then the programm listens to all device and asks for a key press.
-
-  tff csv [ /dev/input/... ]
-
-     Write the events in CSV format.
-     If no device was given, then the programm listens to all device and asks for a key press.
-
-  tff create-events-from-csv myfile.csv
-
-     Create events from a csv file.
-
-  tff combos [--debug] combos.yaml [ /dev/input/... ]
-
-     Run combos defined in combos.yaml
-
-  tff replay-combo-log combos.yaml combo.log
-
-     Replay a combo log. If you got a panic while using the combos sub-command,
-     you can update the Go code and replay the log to see if the bug was fixed.
-     You must run the 'combos' sub-command with the --debug flag to create the log.
-
-  Devices which look like a keyboard:
-/dev/input/event3 AT Translated Set 2 keyboard [EV_SYN EV_KEY EV_MSC EV_LED EV_REP] []
-/dev/input/event7 Lenovo ThinkPad Compact USB Keyboard with TrackPoint [EV_SYN EV_KEY EV_MSC EV_LED EV_REP] []
 ```
 
 ## combos.yaml
@@ -82,41 +50,9 @@ Use `tff print` to see which characters your keys emit.
 
 [my-combos.yaml](./my-combos.yaml) is an example config.
 
-## Sub-commands
+## Usage
 
-```text
-❯ sudo ~/go/bin/tff -h
-
-Create a new input device from an existing one
-Usage:
-  tff print [ /dev/input/... ]
-
-      print events.
-      If no device was given, then the programm listens to all device and asks for a key press.
-
-  tff csv [ /dev/input/... ]
-
-     Write the events in CSV format.
-     If no device was given, then the programm listens to all device and asks for a key press.
-
-  tff create-events-from-csv myfile.csv
-
-     Create events from a csv file.
-
-  tff combos [--debug] combos.yaml [ /dev/input/... ]
-
-     Run combos defined in combos.yaml
-
-  tff replay-combo-log combos.yaml combo.log
-
-     Replay a combo log. If you got a panic while using the combos sub-command,
-     you can update the Go code and replay the log to see if the bug was fixed.
-     You must run the 'combos' sub-command with the --debug flag to create the log.
-
-  Devices which look like a keyboard:
-/dev/input/event3 AT Translated Set 2 keyboard [EV_SYN EV_KEY EV_MSC EV_LED EV_REP] []
-/dev/input/event7 Lenovo ThinkPad Compact USB Keyboard with TrackPoint [EV_SYN EV_KEY EV_MSC EV_LED EV_REP] []
-```
+[Usage](./usage.md)
 
 ## Keys That Are Hard to Access
 

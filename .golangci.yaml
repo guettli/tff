@@ -1,0 +1,28 @@
+linters:
+  enable-all: true
+  disable:
+    - depguard
+    - lll
+    - nlreturn
+    - wsl
+    - mnd
+    - tenv
+    - gochecknoinits
+    - err113
+    - exhaustruct
+    - forbidigo
+    - gochecknoglobals
+    - varnamelen
+    - thelper
+    - testpackage
+    - perfsprint
+    - nonamedreturns
+    - cyclop
+    - funlen
+    - gocognit
+
+linters-settings:
+  cyclop:
+    max-complexity: 15
+  paralleltest:
+    ignore-missing: true

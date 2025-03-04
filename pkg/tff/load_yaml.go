@@ -32,13 +32,13 @@ func LoadYamlFromBytes(yamlBytes []byte) ([]*Combo, error) {
 	y := Yaml{}
 	err := yaml.Unmarshal(yamlBytes, &y)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal yaml: %w", err)
 	}
 	combos := make([]*Combo, 0, len(y.Combos))
 	for _, yamlCombo := range y.Combos {
 		combo := Combo{}
 		if len(yamlCombo.Keys) == 0 {
-			return nil, fmt.Errorf("empty list in 'keys' is not allowed.")
+			return nil, fmt.Errorf("empty list in 'keys' is not allowed")
 		}
 		keys, err := stringToKeyCodes(yamlCombo.Keys)
 		if err != nil {
@@ -47,7 +47,7 @@ func LoadYamlFromBytes(yamlBytes []byte) ([]*Combo, error) {
 		combo.Keys = keys
 
 		if len(yamlCombo.OutKeys) == 0 {
-			return nil, fmt.Errorf("empty list in 'outKeys' is not allowed.")
+			return nil, fmt.Errorf("empty list in 'outKeys' is not allowed")
 		}
 		keys, err = stringToKeyCodes(yamlCombo.OutKeys)
 		if err != nil {
@@ -75,18 +75,18 @@ func stringToKeyCodes(str string) ([]KeyCode, error) {
 // asdfasdfasdf
 
 var (
-	OnlyLowerCaseAllowedErr = fmt.Errorf("only lower case characters are allowed")
-	UnknownKeyErr           = fmt.Errorf("unknown key")
+	errOnlyLowerCaseAllowed = fmt.Errorf("only lower case characters are allowed")
+	errUnknownKey           = fmt.Errorf("unknown key")
 )
 
 func wordToKeyCode(s string) (KeyCode, error) {
 	if strings.ToLower(s) != s {
-		return 0, fmt.Errorf("key %q is invalid: %w", s, OnlyLowerCaseAllowedErr)
+		return 0, fmt.Errorf("key %q is invalid: %w", s, errOnlyLowerCaseAllowed)
 	}
-	keyString := fmt.Sprintf("KEY_%s", string(strings.ToUpper(s)))
+	keyString := fmt.Sprintf("KEY_%s", strings.ToUpper(s))
 	key, ok := evdev.KEYFromString[keyString]
 	if !ok {
-		return 0, fmt.Errorf("failed to get key %q: %w. Use sub-command 'print' to see valid names of keys", s, UnknownKeyErr)
+		return 0, fmt.Errorf("failed to get key %q: %w. Use sub-command 'print' to see valid names of keys", s, errUnknownKey)
 	}
 	return key, nil
 }

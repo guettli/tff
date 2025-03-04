@@ -8,9 +8,6 @@ import (
 )
 
 func Test_runeToKeyCode(t *testing.T) {
-	type args struct {
-		r rune
-	}
 	tests := []struct {
 		inString        string
 		expectedKeyCode KeyCode
@@ -19,15 +16,15 @@ func Test_runeToKeyCode(t *testing.T) {
 		{"x", evdev.KEY_X, nil},
 		{"1", evdev.KEY_1, nil},
 		{"capslock", evdev.KEY_CAPSLOCK, nil},
-		{"X", 0, OnlyLowerCaseAllowedErr},
-		{"ü", 0, UnknownKeyErr},
+		{"X", 0, errOnlyLowerCaseAllowed},
+		{"ü", 0, errUnknownKey},
 	}
 	for _, tt := range tests {
 		got, err := wordToKeyCode(tt.inString)
 		if tt.expectedError != nil {
 			require.ErrorIs(t, err, tt.expectedError)
 		} else {
-			require.Nil(t, err)
+			require.NoError(t, err)
 		}
 		require.Equal(t, tt.expectedKeyCode, got)
 	}
@@ -52,7 +49,7 @@ func TestLoadYamlFromBytes_ok(t *testing.T) {
 		},
 	}
 	actual, err := LoadYamlFromBytes([]byte(yamlString))
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, expected, actual)
 }
 
@@ -66,13 +63,13 @@ func TestLoadYamlFromBytes_fail(t *testing.T) {
   - keys: f j
   - outKeys: a b c
 `,
-			`empty list in 'outKeys' is not allowed.`,
+			`empty list in 'outKeys' is not allowed`,
 		},
 		{
 			`combos:
   - outKeys: a b c
 `,
-			`empty list in 'keys' is not allowed.`,
+			`empty list in 'keys' is not allowed`,
 		},
 		{
 			`combos

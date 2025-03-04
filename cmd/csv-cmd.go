@@ -12,7 +12,7 @@ func init() {
 	combosCmd := &cobra.Command{
 		Use:   "csv [device]",
 		Short: "Conntect to one evdev device and print the events in csv format. Needs root permissions.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			path := ""
 			if len(args) > 0 {
 				path = args[0]
@@ -31,5 +31,5 @@ func init() {
 		Args:                  cobra.RangeArgs(0, 1),
 		DisableFlagsInUseLine: true,
 	}
-	rootCmd.AddCommand(combosCmd)
+	RootCmd.AddCommand(combosCmd)
 }

@@ -9,7 +9,7 @@ func init() {
 	combosCmd := &cobra.Command{
 		Use:   "print [device]",
 		Short: "Conntect to one evdev device and print the events. Needs root permissions.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			device := ""
 			if len(args) > 0 {
 				device = args[0]
@@ -19,5 +19,5 @@ func init() {
 		Args:                  cobra.RangeArgs(0, 1),
 		DisableFlagsInUseLine: true,
 	}
-	rootCmd.AddCommand(combosCmd)
+	RootCmd.AddCommand(combosCmd)
 }

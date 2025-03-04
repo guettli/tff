@@ -46,5 +46,14 @@ combos:
   - keys: f i
     outKeys: pageup
 
-  - keys: f comma
+  - ke ys: f comma
     outKeys: pagedown
+
+  # todo: tripple combos do not work yet.
+  - keys: d f j
+    outKeys: esc
+
+# TODO: I am not sure yet how to trigger ESC, TAB, ENTER.
+# Later it would be nice to have shortcuts for ctrl-a, ctrl-x, ctrl-c, ctrl-v. So that my fingers
+# can stay on the home row.
+# A numeric "layer" would be nice. I could use a "d f" on the right hand, and type numbers with the left hand....

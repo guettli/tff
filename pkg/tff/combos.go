@@ -31,12 +31,12 @@ type device struct {
 func (d *device) Open() error {
 	sourceDev, err := evdev.Open(d.path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open device %q: %w", d.path, err)
 	}
 
 	err = sourceDev.Grab()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to grab device: %w", err)
 	}
 	outDev, err := evdev.CloneDevice(fmt.Sprintf("tff-clone-%d-%d", os.Getpid(), d.id), sourceDev)
 	if err != nil {
@@ -48,6 +48,11 @@ func (d *device) Open() error {
 }
 
 func CombosMain(ctx context.Context, cmdconfig CombosCmdConfig) error {
+	combos, err := LoadYamlFile(cmdconfig.ConfigFile)
+	if err != nil {
+		return err
+	}
+
 	if len(cmdconfig.DevicePaths) == 0 {
 		p, err := findDev()
 		if err != nil {
@@ -61,10 +66,6 @@ func CombosMain(ctx context.Context, cmdconfig CombosCmdConfig) error {
 		}
 		fmt.Printf("%s %s %q\n", usingDeviceMessage, alias, p)
 		cmdconfig.DevicePaths = []string{p}
-	}
-	combos, err := LoadYamlFile(cmdconfig.ConfigFile)
-	if err != nil {
-		return err
 	}
 
 	devices := make([]*device, 0, len(cmdconfig.DevicePaths))
@@ -87,15 +88,15 @@ func CombosMain(ctx context.Context, cmdconfig CombosCmdConfig) error {
 	if good == 0 {
 		return fmt.Errorf("no devices could be opened: %w", errors.Join(openErrors...))
 	}
-	ctx, cancel := context.WithCancelCause(context.Background())
+	ctx, cancel := context.WithCancelCause(ctx)
 	errorChannel := make(chan error)
-	for i := 0; i < len(devices); i++ {
+	for i := range devices {
 		go handleOneDevice(ctx, combos, devices[i], errorChannel)
 	}
 	err = <-errorChannel
 	fmt.Printf("error, stopping now: %v\n", err)
 	cancel(err)
-	for i := 0; i < len(cmdconfig.DevicePaths)-1; i++ {
+	for range len(cmdconfig.DevicePaths) - 1 {
 		err := <-errorChannel
 		fmt.Println(err)
 	}

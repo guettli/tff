@@ -31,22 +31,23 @@ func (wts *writeToSlice) requireEqual(t *testing.T, expectedShort string) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	var e []string
-	for _, line := range strings.Split(expectedShort, "\n") {
+	lines := strings.Split(expectedShort, "\n")
+	e := make([]string, 0, len(lines))
+	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
 		e = append(e, line)
-
 	}
 	expectedShort = strings.Join(e, "\n")
 	require.Equal(t, expectedShort, actualShort)
 }
 
 func csvToShortCsv(csv string) (string, error) {
-	var e []string
-	for _, line := range strings.Split(csv, "\n") {
+	lines := strings.Split(csv, "\n")
+	e := make([]string, 0, len(lines))
+	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -61,11 +62,11 @@ func csvToShortCsv(csv string) (string, error) {
 }
 
 func AssertComboCSVInputOutput(t *testing.T, input string, expectedOutput string, allCombos []*Combo) {
-	_assertInputOutput(t, input, expectedOutput, allCombos, NewReadFromSliceInputCSV)
+	_assertInputOutput(t, input, expectedOutput, allCombos, newReadFromSliceInputCSV)
 }
 
 func AssertComboStateStringInputOutput(t *testing.T, input string, expectedOutput string, allCombos []*Combo) {
-	_assertInputOutput(t, input, expectedOutput, allCombos, NewReadFromSliceInputStateString)
+	_assertInputOutput(t, input, expectedOutput, allCombos, newReadFromSliceInputStateString)
 }
 
 func _assertInputOutput(t *testing.T, input string, expectedOutput string, allCombos []*Combo,
@@ -74,7 +75,7 @@ func _assertInputOutput(t *testing.T, input string, expectedOutput string, allCo
 	t.Helper()
 	ew := writeToSlice{}
 	er, err := stringToEventsFunc(input)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	err = manInTheMiddle(context.Background(), er, &ew, allCombos, true)
 	require.NoError(t, err)
 	ew.requireEqual(t, expectedOutput)
@@ -113,7 +114,9 @@ func (rfs *readFromSlice) loadCSV(csvString string) error {
 
 func stateStringToSlice(stateString string) ([]evdev.InputEvent, error) {
 	var timeVal syscall.Timeval
-	syscall.Gettimeofday(&timeVal)
+	if err := syscall.Gettimeofday(&timeVal); err != nil {
+		return nil, fmt.Errorf("failed to get time: %w", err)
+	}
 	timeVal.Usec = 0
 	parts := strings.Fields(stateString)
 	if len(parts)%2 != 1 {
@@ -147,7 +150,7 @@ func stateStringToSlice(stateString string) ([]evdev.InputEvent, error) {
 		// is time
 		d, err := time.ParseDuration(part[1 : len(part)-1])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to parse duration %q: %w", part, err)
 		}
 		t := syscallTimevalToTime(timeVal)
 		t = t.Add(d)
@@ -162,15 +165,14 @@ func (rfs *readFromSlice) loadStateString(stateString string) error {
 	return err
 }
 
-func NewReadFromSliceInputCSV(csvString string) (*readFromSlice, error) {
+func newReadFromSliceInputCSV(csvString string) (*readFromSlice, error) {
 	rfs := readFromSlice{}
 	err := rfs.loadCSV(csvString)
 	return &rfs, err
 }
 
-// stateSTring is a string like this:
-// capslock_ (259.006ms) u_ (105.844ms) u/ (721.7ms) capslock/
-func NewReadFromSliceInputStateString(stateString string) (*readFromSlice, error) {
+// stateSTring is a string like this: "capslock_ (259.006ms) u_ (105.844ms) u/ (721.7ms) capslock/".
+func newReadFromSliceInputStateString(stateString string) (*readFromSlice, error) {
 	rfs := readFromSlice{}
 	err := rfs.loadStateString(stateString)
 	return &rfs, err
@@ -202,8 +204,8 @@ var fjkCombos = []*Combo{
 func Test_manInTheMiddle_noMatch(t *testing.T) {
 	f := func(allCombos []*Combo) {
 		ew := writeToSlice{}
-		er, err := NewReadFromSliceInputCSV(asdfTestEvents)
-		require.Nil(t, err)
+		er, err := newReadFromSliceInputCSV(asdfTestEvents)
+		require.NoError(t, err)
 		err = manInTheMiddle(context.Background(), er, &ew, allCombos, true)
 		require.NoError(t, err)
 		csv := eventsToCsv(ew.s)
@@ -235,7 +237,6 @@ func Test_manInTheMiddle_noMatch(t *testing.T) {
 	})
 }
 
-// //////////////////////////////////////////////
 func Test_manInTheMiddle_NoMatch_JustKeys(t *testing.T) {
 	AssertComboCSVInputOutput(t, `
 	1712500000;000000;EV_KEY;KEY_B;down
@@ -555,7 +556,7 @@ func Test_ShouldNotPanic(t *testing.T) {
 |>>1737965477;104606;EV_SYN;SYN_REPORT;up
 |>>1737965477;488608;EV_MSC;MSC_SCAN;458769
 |>>1737965477;488608;EV_KEY;KEY_N;down`
-	scanner := bufio.NewScanner(strings.NewReader(string(log)))
+	scanner := bufio.NewScanner(strings.NewReader(log))
 	logReader := ComboLogEventReader{scanner: scanner}
 	combos, err := LoadYamlFromBytes([]byte(`
 combos:

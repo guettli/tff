@@ -32,7 +32,7 @@ const (
 
 type Event = evdev.InputEvent
 
-type KeyCode = evdev.EvCode // for exmaple KEY_A, KEY_B, ...
+type KeyCode = evdev.EvCode // for example KEY_A, KEY_B, ...
 
 // timSub calculates the duration. The event "first" must be younger.
 func timeSub(first, second syscall.Timeval) time.Duration {
@@ -54,84 +54,11 @@ var (
 	}
 )
 
-func listDevices() string {
-	basePath := "/dev/input"
-
-	files, err := os.ReadDir(basePath)
-	if err != nil {
-		return err.Error()
-	}
-
-	var lines []string
-	foundOne := false
-	for _, fileName := range files {
-		if fileName.IsDir() {
-			continue
-		}
-		full := fmt.Sprintf("%s/%s", basePath, fileName.Name())
-		if d, err := evdev.OpenWithFlags(full, os.O_RDONLY); err == nil {
-			foundOne = true
-			name, _ := d.Name()
-
-			// At least on my laptop many devices can emit EV_KEY.
-			// So how to distuingish between a real keyboard and a device
-			// like a power-button?
-			// I found that EV_REP (repeated keys) are emitted only by keyboards.
-			// Feel free to improve that.
-			if !slices.Contains(d.CapableTypes(), evdev.EV_REP) {
-				continue
-			}
-
-			lines = append(lines, fmt.Sprintf("%s %s %+v %+v", d.Path(), name,
-				Map(d.CapableTypes(), evdev.TypeName),
-				Map(d.Properties(), evdev.PropName),
-			))
-			d.Close()
-		}
-	}
-	if !foundOne {
-		return "No single device was found. It is likely that you have no permission to access /dev/input/... (`sudo` might help)\n"
-	}
-	return strings.Join(lines, "\n")
-}
-
-func usage() {
-	fmt.Printf(`Create a new input device from an existing one
-Usage:
-  tff print [ /dev/input/... ]
-
-      print events.
-	  If no device was given, then the programm listens to all device and asks for a key press.
-
-  tff csv [ /dev/input/... ]
-
-     Write the events in CSV format.
-	 If no device was given, then the programm listens to all device and asks for a key press.
-
-  tff create-events-from-csv myfile.csv
-
-     Create events from a csv file.
-
-  tff combos [--debug] combos.yaml [ /dev/input/... ]
-
-     Run combos defined in combos.yaml
-
-  tff replay-combo-log combos.yaml combo.log
-
-     Replay a combo log. If you got a panic while using the combos sub-command,
-	 you can update the Go code and replay the log to see if the bug was fixed.
-	 You must run the 'combos' sub-command with the --debug flag to create the log.
-
-  Devices which look like a keyboard:
-%s
-`, listDevices())
-}
-
 func findDev() (string, error) {
-	dev_input := "/dev/input"
-	entries, err := os.ReadDir(dev_input)
+	devInput := "/dev/input"
+	entries, err := os.ReadDir(devInput)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read dir %q: %w", devInput, err)
 	}
 	c := make(chan eventOfPath)
 	foundDevices := 0
@@ -140,7 +67,7 @@ func findDev() (string, error) {
 			// not a character device file.
 			continue
 		}
-		path := filepath.Join(dev_input, entry.Name())
+		path := filepath.Join(devInput, entry.Name())
 		dev, err := evdev.Open(path)
 		if err != nil {
 			if strings.Contains(err.Error(), "inappropriate ioctl for device") {
@@ -150,16 +77,14 @@ func findDev() (string, error) {
 			continue
 		}
 		foundDevices++
-		defer func(dev *evdev.InputDevice, path string) {
-			dev.Close()
-		}(dev, path)
+		defer dev.Close()
 		go readEvents(dev, path, c)
 	}
 	if foundDevices == 0 {
-		return "", fmt.Errorf("No device found. Please try using `sudo`, as root permissions are needed.")
+		return "", fmt.Errorf("no device found. Please try using `sudo`, as root permissions are needed")
 	}
 	fmt.Println(pleaseUseDeviceMessage)
-	found := ""
+	var found string
 	for {
 		evOfPath := <-c
 		ev := evOfPath.event
@@ -196,15 +121,15 @@ func readEvents(dev *evdev.InputDevice, path string, c chan eventOfPath) {
 	}
 }
 
-var noAliasFoundErr = fmt.Errorf("No alias found")
+var errNoAliasFound = fmt.Errorf("no alias found")
 
-// /dev/input/event6 --> /dev/input/by-id/usb-Lenovo_ThinkPad_Compact_USB_Keyboard_with_TrackPoint-event-kbd
+// /dev/input/event6 --> /dev/input/by-id/usb-Lenovo_ThinkPad_Compact_USB_Keyboard_with_TrackPoint-event-kbd.
 func getDeviceAlias(path string) (string, error) {
 	alias, err := getDeviceAliasFromBaseDir(path, "/dev/input/by-id")
 	if err == nil {
 		return alias, nil
 	}
-	if !errors.Is(err, noAliasFoundErr) {
+	if !errors.Is(err, errNoAliasFound) {
 		return "", err
 	}
 	return getDeviceAliasFromBaseDir(path, "/dev/input/by-path")
@@ -213,7 +138,7 @@ func getDeviceAlias(path string) (string, error) {
 func getDeviceAliasFromBaseDir(path string, baseDir string) (string, error) {
 	entries, err := os.ReadDir(baseDir)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read dir %q: %w", baseDir, err)
 	}
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].Name() < entries[j].Name()
@@ -226,7 +151,7 @@ func getDeviceAliasFromBaseDir(path string, baseDir string) (string, error) {
 		idFileAbs := filepath.Join(baseDir, entry.Name())
 		target, err := os.Readlink(idFileAbs)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to read link %q: %w", idFileAbs, err)
 		}
 		if !filepath.IsAbs(target) {
 			target = filepath.Join(baseDir, target)
@@ -235,7 +160,7 @@ func getDeviceAliasFromBaseDir(path string, baseDir string) (string, error) {
 			return idFileAbs, nil
 		}
 	}
-	return "", noAliasFoundErr
+	return "", errNoAliasFound
 }
 
 func GetDeviceFromPath(path string) (*evdev.InputDevice, error) {
@@ -353,17 +278,13 @@ func csvlineToEvent(line string) (Event, error) {
 		Time:  syscall.Timeval{Sec: sec, Usec: usec},
 		Type:  evType,
 		Code:  code,
-		Value: int32(value),
+		Value: int32(value), //nolint:gosec
 	}, nil
 }
 
 type Combo struct {
 	Keys    []KeyCode
 	OutKeys []KeyCode
-}
-
-func (c *Combo) matches(ev Event) bool {
-	return slices.Contains(c.Keys, ev.Code)
 }
 
 func (c *Combo) String() string {
@@ -412,7 +333,7 @@ func manInTheMiddle(ctx context.Context, er EventReader, ew EventWriter, allComb
 		}
 	}
 	if maxLength == 0 {
-		return fmt.Errorf("No combo contains keys")
+		return fmt.Errorf("no combo contains keys")
 	}
 	state := NewState(maxLength, ew, allCombos)
 	state.fakeActiveTimer = fakeActiveTimer
@@ -433,7 +354,7 @@ func manInTheMiddle(ctx context.Context, er EventReader, ew EventWriter, allComb
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("ctx.Done: %w", ctx.Err())
 		case eventErr, ok := <-eventChannel:
 			if !ok {
 				panic("I don't expect this channel to get closed.")
@@ -479,7 +400,7 @@ func manInTheMiddleInnerLoop(evP *Event, ew EventWriter, state *State) error {
 		// fmt.Printf(" skipping %s\n", evP.String())
 		err = ew.WriteOne(evP)
 		if err != nil {
-			return err
+			return fmt.Errorf("WriteOne failed: %w", err)
 		}
 		return nil
 	}
@@ -492,7 +413,7 @@ func manInTheMiddleInnerLoop(evP *Event, ew EventWriter, state *State) error {
 		fmt.Printf(" skipping (repeat): %s\n", evP.String())
 		return nil
 	default:
-		return fmt.Errorf("Received %d. Expected UP or DOWN", evP.Value)
+		return fmt.Errorf("received %d. Expected UP or DOWN", evP.Value)
 	}
 	if err != nil {
 		return err
@@ -511,7 +432,7 @@ func NewState(maxLength int, ew EventWriter, allCombos []*Combo) *State {
 	return &s
 }
 
-// Maximum possible time.Time value
+// Maximum possible time.Time value.
 var maxTime = time.Unix(1<<63-62135596801, 999999999)
 
 type State struct {
@@ -546,13 +467,12 @@ func (state *State) Eval(time syscall.Timeval, reason string) error {
 			state.buf = nil
 			return nil
 		}
-		state.FlushBuffer("Eval>up-down-of-singlechar")
-		return nil
+		return state.FlushBuffer("Eval>up-down-of-singlechar")
 	}
 	combos := state.allCombos
 	codes := make([]evalResult, 0, len(combos))
 	for _, combo := range combos {
-		code, msg, err := state.EvalCombo(combo, time)
+		code, msg, err := state.evalCombo(combo, time)
 		if err != nil {
 			return fmt.Errorf("failed to eval combo: %w", err)
 		}
@@ -626,7 +546,7 @@ var (
 	AllDownKeysSeenAndAlreadyWritten evalResult = "AllDownKeysSeenAndAlreadyWritten"
 )
 
-func (state *State) EvalCombo(combo *Combo, currTime syscall.Timeval) (evalResult, string, error) {
+func (state *State) evalCombo(combo *Combo, currTime syscall.Timeval) (evalResult, string, error) {
 	// check if all down-keys are seen, and in the same order.
 	seenDown := make([]KeyCode, 0, len(combo.Keys))
 	seenUp := make([]KeyCode, 0, len(combo.Keys))
@@ -676,8 +596,7 @@ func (state *State) EvalCombo(combo *Combo, currTime syscall.Timeval) (evalResul
 	if firstUpEvent != nil &&
 		syscallTimevalToTime(lastDownEvent.Time).Before(syscallTimevalToTime(firstUpEvent.Time)) &&
 		lastDownEvent.Code != firstUpEvent.Code {
-
-		overlapDuration := timeSub(*&lastDownEvent.Time, firstUpEvent.Time)
+		overlapDuration := timeSub(lastDownEvent.Time, firstUpEvent.Time)
 		if overlapDuration < 40*time.Millisecond {
 			return NoMatch, fmt.Sprintf("Overlap too short %s", overlapDuration), nil
 		}
@@ -715,7 +634,9 @@ func tooYoung(state *State, lastDownEvent *evdev.InputEvent, currTime syscall.Ti
 // then we need to fire the down events after some time.
 func (state *State) AfterTimer() error {
 	timeval := syscall.Timeval{}
-	syscall.Gettimeofday(&timeval)
+	if err := syscall.Gettimeofday(&timeval); err != nil {
+		return fmt.Errorf("failed to get time: %w", err)
+	}
 	return state.Eval(timeval, "timer")
 }
 
@@ -731,8 +652,7 @@ func (state *State) WriteComboDownKeysNew(combo *Combo) error {
 	}
 	// We don't remove events from the buffer. This gets done,
 	// when the corresponding up-keys are seen.
-	state.WriteCombo(combo, state.buf[0].Time, DOWN)
-	return nil
+	return state.WriteCombo(combo, state.buf[0].Time, DOWN)
 }
 
 func (state *State) WriteComboUpKeysNew(combo *Combo) error {
@@ -761,7 +681,10 @@ func (state *State) WriteComboUpKeysNew(combo *Combo) error {
 		}
 		newBuf = append(newBuf, ev)
 	}
-	state.WriteCombo(combo, state.buf[0].Time, UP)
+	err := state.WriteCombo(combo, state.buf[0].Time, UP)
+	if err != nil {
+		return fmt.Errorf("failed to write UP event: %w", err)
+	}
 	state.buf = newBuf
 	return nil
 }
@@ -800,7 +723,7 @@ func (state *State) Len() int {
 }
 
 func (state *State) String() string {
-	var ret []string
+	ret := make([]string, 0, 2*len(state.buf))
 	var prev *Event
 	for i := range state.buf {
 		ev := state.buf[i]
@@ -869,14 +792,16 @@ func (state *State) HandleDownChar(
 
 func printEvents(sourceDevice *evdev.InputDevice) error {
 	defer sourceDevice.Close()
-	sourceDevice.Grab()
+	if err := sourceDevice.Grab(); err != nil {
+		return fmt.Errorf("failed to grab device: %w", err)
+	}
 	targetName, err := sourceDevice.Name()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get device name: %w", err)
 	}
-	timeoutSeconds := 5 * time.Second
+	timeout := 5 * time.Second
 	fmt.Printf("Grabbing %s\n", targetName)
-	fmt.Printf("Do not type for %s to terminate.\n", timeoutSeconds)
+	fmt.Printf("Do not type for %s to terminate.\n", timeout)
 	prevEvent := Event{
 		Time:  timeToSyscallTimeval(time.Now()),
 		Type:  evdev.EV_KEY,
@@ -889,14 +814,14 @@ func printEvents(sourceDevice *evdev.InputDevice) error {
 	}
 	go source.readAndWriteForever()
 	for {
-		ev, timedOut, err := source.getOneEventOrTimeout(time.Duration(time.Second))
+		ev, timedOut, err := source.getOneEventOrTimeout(time.Second)
 		if err != nil {
 			return err
 		}
 		if timedOut {
 			fmt.Println()
 			duration := time.Since(syscallTimevalToTime(prevEvent.Time))
-			if duration > timeoutSeconds {
+			if duration > timeout {
 				fmt.Println("timeout")
 				break
 			}
@@ -947,7 +872,7 @@ func printEvents(sourceDevice *evdev.InputDevice) error {
 
 func timeToSyscallTimeval(t time.Time) syscall.Timeval {
 	return syscall.Timeval{
-		Sec:  int64(t.Unix()),              // Seconds since Unix epoch
+		Sec:  t.Unix(),                     // Seconds since Unix epoch
 		Usec: int64(t.Nanosecond() / 1000), // Nanoseconds to microseconds
 
 	}
@@ -1003,7 +928,7 @@ func eventToString(ev *Event) string {
 		return fmt.Sprintf("ev.Value is unknown %d. %s", ev.Value, ev.String())
 	}
 
-	name = name + eventValueToShortString[ev.Value]
+	name += eventValueToShortString[ev.Value]
 	return name
 }
 
@@ -1033,7 +958,7 @@ func csvToSlice(csvString string) ([]Event, error) {
 }
 
 func eventToCsvLine(ev Event) string {
-	value := ""
+	var value string
 	switch ev.Value {
 	case DOWN:
 		value = "down"
@@ -1042,7 +967,7 @@ func eventToCsvLine(ev Event) string {
 	case REPEAT:
 		value = "repeat"
 	default:
-		value = fmt.Sprint(ev.Value)
+		value = strconv.Itoa(int(ev.Value))
 	}
 	return fmt.Sprintf("%d;%d;%s;%s;%s\n", ev.Time.Sec, ev.Time.Usec,
 		ev.TypeName(), ev.CodeName(),

@@ -17,13 +17,13 @@ func init() {
 			config.DevicePaths = args[1:]
 			return tff.CombosMain(cmd.Context(), config)
 		},
-		Args: func(cmd *cobra.Command, args []string) error {
+		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return errors.New("You need to provide at least one argument: combos.yaml")
+				return errors.New("you need to provide at least one argument: combos.yaml")
 			}
 			return nil
 		},
 	}
 	combosCmd.Flags().BoolVarP(&config.Debug, "debug", "d", false, "Print debug output")
-	rootCmd.AddCommand(combosCmd)
+	RootCmd.AddCommand(combosCmd)
 }

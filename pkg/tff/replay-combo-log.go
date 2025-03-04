@@ -17,7 +17,7 @@ func ReplayComboLogMain(ctx context.Context, comboYamlFile string, logFile strin
 		Version: 1,
 	}, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create output device: %w", err)
 	}
 	defer outDev.Close()
 	combos, err := LoadYamlFile(comboYamlFile)

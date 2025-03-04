@@ -1,0 +1,19 @@
+# Systemd Service for Ten Flying Fingers
+#
+# https://github.com/guettli/tff
+#
+# Change XXXXX and SOME_DEVICE, then install:
+#
+# sudo cp ten-flying-fingers.service /etc/systemd/system/ten-flying-fingers.service
+# sudo systemctl enable --now ten-flying-fingers.service
+
+[Unit]
+Description=Ten Flying Fingers
+
+[Service]
+Restart=always
+RestartSec=3
+ExecStart=/home/XXXXX/go/bin/tff combos /home/XXXXX/projects/tff/my-combos.yaml /dev/input/by-id/SOME_DEVICE /dev/input/by-id/SOME_OTHER_DEVICE
+
+[Install]
+WantedBy=default.target

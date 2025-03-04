@@ -15,5 +15,5 @@ func init() {
 		Args:                  cobra.ExactArgs(2),
 		DisableFlagsInUseLine: true,
 	}
-	rootCmd.AddCommand(combosCmd)
+	RootCmd.AddCommand(combosCmd)
 }
