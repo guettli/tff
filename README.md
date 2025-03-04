@@ -1,7 +1,9 @@
 # Ten Flying Fingers
 
-I learned [touch typing](https://en.wikipedia.org/wiki/Touch_typing) several years ago, and I can
-write almost anything without looking at the keyboard.
+[tff (Ten Flying Fingers)](https://github.com/guettli/tff) is a Linux tool for remapping keys.
+
+I learned touch typing several years ago, and I can
+write most keys without looking at the keyboard.
 
 I want to keep my index fingers on "F" and "J" as much as possible (a.k.a. the "home row").
 
@@ -27,10 +29,6 @@ sudo $(go env GOPATH)/bin/tff combos combos.yaml
 
 After starting above command move the input to an other window and see if you can produce `1` by
 overlapping `J F`. Overlapping `F J` emits `2`.
-
-Attention: The characters which are printed on your keyboard are very likely different from the
-characters which are received from the Linux evdev. For example on QWERTZ a `Z` is a `Y`and a `ö` is
-a `semicolon`.
 
 Use `tff print` to see which characters your keys emit.
 
