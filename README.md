@@ -78,6 +78,10 @@ a `semicolon`.
 
 Use `tff print` to see which characters your keys emit.
 
+## My config
+
+[my-combos.yaml](./my-combos.yaml) is an example config.
+
 ## Sub-commands
 
 ```text
@@ -155,14 +159,14 @@ Does a piano player hit one key after the other? No, a piano player hits several
 I want pressing (and holding) `F` and then `J` to be one combo, and `J F` another combo.
 
 Initially, I used [KMonad](https://github.com/kmonad/kmonad), but its syntax is not easy for me to
-understand and (as far as I know) it cannot differentiate between an `F J` and a `J F` combo.
+understand and (as far as I know) it cannot differentiate between a `F J` and a `J F` combo.
 
 I searched a bit and found [go-evdev](https://github.com/holoplot/go-evdev), a Go package for
 receiving and sending events on Linux.
 
 ## Overlap vs Combo
 
-While typing fluently, you may have some overlap between key presses. This tool differentiates
+While typing fluently, you may have some overlap between key presses. `tff` differentiates
 between hitting `F` and then `J` with an overlap time of 40ms. If both keys are pressed
 simultaneously and for longer, it is treated as one combination. Otherwise, it is interpreted as two
 separate keys.

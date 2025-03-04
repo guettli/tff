@@ -1,0 +1,50 @@
+# Ten Flying Fingers (TFF) is a keyboard layout.
+# It is optimized for keeping your fingers on the home row.
+# https://github.com/guettli/tff
+
+combos:
+  # "f" is triggered by my left pointer finger.
+  # It gets used for common navigation and backspace/del.
+
+  # Backspace:
+  # I want my "strong" pointer fingers to trigger that key.
+  # I do typos often, so I want to be able to quickly correct them.
+  - keys: f j
+    outKeys: backspace
+
+  # Down:
+  # Selecting items from an autocomplete list (e.g. in a browser address bar).
+  - keys: f n
+    outKeys: down
+
+  - keys: f u
+    outKeys: up
+
+  - keys: f m
+    outKeys: down
+
+  # Home (pos1, start of line)
+  # Looking at the right hand, it is at the left side.
+  # That's where I and to move the cursor to: the left side.
+  - keys: f h
+    outKeys: home
+
+  # End (end of line)
+  # At the right side of my right hand.
+  - keys: f semicolon # semicolon=ö on QWERTZ. Right to "L".
+    outKeys: end
+
+  - keys: f space
+    outKeys: delete
+
+  - keys: f k
+    outKeys: left
+
+  - keys: f l
+    outKeys: right
+
+  - keys: f i
+    outKeys: pageup
+
+  - keys: f comma
+    outKeys: pagedown

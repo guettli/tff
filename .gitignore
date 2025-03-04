@@ -2,5 +2,4 @@ go-evdev/
 .coverage
 /*.csv
 /*.log
-/*.yaml
 main
