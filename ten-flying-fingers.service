@@ -10,7 +10,6 @@ Environment=BIN=/home/guettli/go/bin/tff
 Environment=DEVICE1=/dev/input/by-path/platform-i8042-serio-0-event-kbd
 Environment=DEVICE2=/dev/input/by-id/usb-Lenovo_ThinkPad_Compact_USB_Keyboard_with_TrackPoint-event-kbd
 
-ExecStartPre=$BIN validate $CONFIG
 ExecStart=$BIN combos $CONFIG $DEVICE2 $DEVICE2
 
 [Install]

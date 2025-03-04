@@ -12,7 +12,7 @@ fi
 
 go install .
 
-sudo cp ten-flying-fingfers.service /etc/systemd/system/
+sudo cp ten-flying-fingers.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable ten-flying-fingers
 sudo systemctl restart ten-flying-fingers
