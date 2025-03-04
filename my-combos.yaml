@@ -46,7 +46,7 @@ combos:
   - keys: f i
     outKeys: pageup
 
-  - ke ys: f comma
+  - keys: f comma
     outKeys: pagedown
 
   # todo: tripple combos do not work yet.
