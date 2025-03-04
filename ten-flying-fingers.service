@@ -5,12 +5,7 @@ Description=Ten Flying Fingers
 Restart=always
 RestartSec=3
 
-Environment=CONFIG=/home/guettli/projects/tff/my-combos.yaml
-Environment=BIN=/home/guettli/go/bin/tff
-Environment=DEVICE1=/dev/input/by-path/platform-i8042-serio-0-event-kbd
-Environment=DEVICE2=/dev/input/by-id/usb-Lenovo_ThinkPad_Compact_USB_Keyboard_with_TrackPoint-event-kbd
-
-ExecStart=$BIN combos $CONFIG $DEVICE2 $DEVICE2
+ExecStart=/home/guettli/go/bin/tff combos /home/guettli/projects/tff/my-combos.yaml /dev/input/by-path/platform-i8042-serio-0-event-kbd /dev/input/by-id/usb-Lenovo_ThinkPad_Compact_USB_Keyboard_with_TrackPoint-event-kbd
 
 [Install]
 WantedBy=default.target
