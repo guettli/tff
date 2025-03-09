@@ -379,9 +379,9 @@ func manInTheMiddle(ctx context.Context, er EventReader, ew EventWriter, allComb
 				}
 				state.fakeActiverTimerNextTime = maxTime
 			}
-
-			fmt.Printf("\n|>>%s", eventToCsvLine(*evP))
-
+			if !eventToSkip(evP) {
+				fmt.Printf("\n|>>%s", eventToCsvLine(*evP))
+			}
 			err = manInTheMiddleInnerLoop(evP, ew, state)
 			if err != nil {
 				return err
@@ -476,7 +476,9 @@ func (state *State) Eval(time syscall.Timeval, reason string) error {
 		if err != nil {
 			return fmt.Errorf("failed to eval combo: %w", err)
 		}
-		fmt.Printf("  EvalCombo %s %s: %s\n", combo.String(), code, msg)
+		if code != NoMatch {
+			fmt.Printf("  EvalCombo %s %s: %s\n", combo.String(), code, msg)
+		}
 		codes = append(codes, code)
 	}
 	// Handle WriteUpKeys first
