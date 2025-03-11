@@ -11,12 +11,12 @@ combos:
 
   # Backspace:
   # I use that key often, because I do typos often.
-  - keys: a f
+  - keys: d f
     outKeys: backspace
 
   # Delete:
   # Like backspace, but in the other direction.
-  - keys: a space
+  - keys: d space
     outKeys: delete
 
 
