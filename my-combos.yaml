@@ -16,7 +16,7 @@ combos:
 
   # Delete:
   # Like backspace, but in the other direction.
-  - keys: f a
+  - keys: a space
     outKeys: delete
 
 
