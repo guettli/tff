@@ -11,12 +11,12 @@ combos:
   # Backspace:
   # I use that key often, because I do typos often. I want a "strong" finger for that.
   # Not the pinky finger. It should be similar to "Pos1"
-  - keys: f j
+  - keys: j f
     outKeys: backspace
 
   # Delete:
   # Like backspace, but in the other direction.
-  - keys: j f
+  - keys: f j
     outKeys: delete
 
 
