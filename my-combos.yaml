@@ -7,16 +7,16 @@ combos:
   # to the trackpoint. The middle and ring finger loose their home position, too.
   # The right pinky is the only finger which stays on the home row.
   # "semicolon" (ö on German keyboards) is below the right pinky finger.
-  # It is starting the "navigation combos".
 
   # Backspace:
-  # I use that key often, because I do typos often.
-  - keys: f d
+  # I use that key often, because I do typos often. I want a "strong" finger for that.
+  # Not the pinky finger. It should be similar to "Pos1"
+  - keys: f j
     outKeys: backspace
 
   # Delete:
   # Like backspace, but in the other direction.
-  - keys: f space
+  - keys: j f
     outKeys: delete
 
 
