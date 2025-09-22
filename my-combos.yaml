@@ -53,6 +53,9 @@ combos:
   - keys: f comma
     outKeys: pagedown
 
+  - keys: g h
+    outKeys: esc
+
   # todo: tripple combos do not work yet.
   - keys: d f j
     outKeys: esc
