@@ -606,3 +606,40 @@ combos:
         	            X-up
 						`)
 }
+
+// Test_SwallowKeys_No_Duplicates verifies that when a key is held down
+// and another key in a combo is pressed multiple times, the held key
+// is not added to swallowKeys repeatedly.
+func Test_SwallowKeys_No_Duplicates(t *testing.T) {
+	// This test simulates holding F and pressing J multiple times
+	// F should only appear once in swallowKeys, not accumulate
+	combos, err := LoadYamlFromBytes([]byte(`
+combos:
+  - keys: f j
+    outKeys: x`))
+	require.NoError(t, err)
+
+	// Create events: F down, J down, J up, J down, J up, J down, J up, F up
+	input := `
+		1000;100;EV_KEY;KEY_F;down
+		1000;200;EV_KEY;KEY_J;down
+		1000;300;EV_KEY;KEY_J;up
+		1000;400;EV_KEY;KEY_J;down
+		1000;500;EV_KEY;KEY_J;up
+		1000;600;EV_KEY;KEY_J;down
+		1000;700;EV_KEY;KEY_J;up
+		1000;800;EV_KEY;KEY_F;up
+	`
+
+	// Expected: X should be emitted 3 times (once for each J press/release)
+	expectedOutput := `
+		X-down
+		X-up
+		X-down
+		X-up
+		X-down
+		X-up
+	`
+
+	AssertComboCSVInputOutput(t, input, expectedOutput, combos)
+}
