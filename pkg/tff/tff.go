@@ -673,7 +673,12 @@ func (state *State) WriteComboUpKeysNew(combo *Combo) error {
 			missingUp = append(missingUp, key)
 		}
 	}
-	state.swallowKeys = append(state.swallowKeys, missingUp...)
+	// Only add keys to swallowKeys if they're not already there
+	for _, key := range missingUp {
+		if !slices.Contains(state.swallowKeys, key) {
+			state.swallowKeys = append(state.swallowKeys, key)
+		}
+	}
 	// This is the final action for this combo.
 	// Now the corresponding keys in the buffer get removed.
 	newBuf := make([]Event, 0, len(state.buf))
