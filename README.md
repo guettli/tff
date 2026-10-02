@@ -1,3 +1,13 @@
+# Development moved to tff2
+
+[tff2](https://github.com/guettli/tff2)
+
+tff2 is written in C++ and runs on ([RP20240](https://en.wikipedia.org/wiki/RP2040)) microcontrollers, too.
+
+---
+
+Docs of old (Go based) project:
+
 # Ten Flying Fingers
 
 [tff (Ten Flying Fingers)](https://github.com/guettli/tff) is a Linux tool for remapping keys.
